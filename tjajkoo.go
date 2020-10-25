@@ -61,41 +61,39 @@ Sprite,Foreground,Centre,"SB\taikobigcircle.png",0,0
  C,0,0,,211,211,211
  F,0,351327,,1,0` + "\n"
 
-	var osufilehalf []string
+	var osufilehalf []string // define the .osu file as a slice for easier detecting of quantity
 
-	cwd, err := os.Getwd()
+	cwd, err := os.Getwd() // get current working directory
 	if err != nil {
 		fmt.Println("lol")
 	}
 
-	allfiles, err := ioutil.ReadDir(".")
+	allfiles, err := ioutil.ReadDir(".") // list every file in directory
 	if err != nil {
 		fmt.Println("can't read directory")
 	}
 
-	for _, file := range allfiles {
+	for _, file := range allfiles { // get the name of the .osu file in directory
 		if strings.HasSuffix(file.Name(), ".osu") {
 			osufilehalf = append(osufilehalf, file.Name())
 		}
 	}
 
-	fmt.Println(osufilehalf)
-
 	if len(osufilehalf) > 1 {
-		fmt.Println("too many osu files in one directory")
+		fmt.Println("too many osu files in one directory") // can't be more than 1 file in the directory
 		panic(err)
 	}
 
-	osufile := cwd + `\` + osufilehalf[0]
+	osufile := cwd + `\` + osufilehalf[0] // add the current working directory path to the .osu file name, forming a proper path to the file
 
 	fmt.Println(osufile)
 
-	osuread, err := os.Open(osufile)
+	osuread, err := os.Open(osufile) // open the .osu file for reading
 	if err != nil {
 		fmt.Println("oops")
 	}
 
-	metadataline := bufio.NewScanner(osuread)
+	metadataline := bufio.NewScanner(osuread) // scanning for metadata that will allow to name the storyboard file
 
 	var titlen string
 	var artistn string
@@ -111,26 +109,26 @@ Sprite,Foreground,Centre,"SB\taikobigcircle.png",0,0
 		}
 	}
 
-	osbfile := artistn + " - " + titlen + " " + "(" + creatorn + ")" + ".osb"
+	osbfile := artistn + " - " + titlen + " " + "(" + creatorn + ")" + ".osb" // concatenating the metadata, forming the name of the storyboard file
 
 	fmt.Println(osbfile)
 
 	osuread.Close()
 
-	osbfilecreated, err := os.Create(osbfile)
+	osbfilecreated, err := os.Create(osbfile) // create the storyboard file
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	appendosbopen, err := os.Open(osbfile)
+	appendosbopen, err := os.Open(osbfile) // open the storyboard file for appending
 	if err != nil {
 		fmt.Println("lol")
 	}
 
-	osbfilecreated.WriteString(basetext)
+	osbfilecreated.WriteString(basetext) // write the lines required for drawing the empty circles at the bottom
 
-	osureadnew, err := os.Open(osufile)
+	osureadnew, err := os.Open(osufile) // open the .osu file for reading (can't use already created osuread variable)
 	if err != nil {
 		fmt.Println("oops")
 	}
@@ -210,14 +208,14 @@ Sprite,Foreground,Centre,"SB\taikobigcircle.png",0,0
 			loopcount++
 			elementcount = loopcount
 
-			if spinner[0] != 48 {
+			if spinner[0] != 48 { // if the hitobject is a spinner stay in place
 				loopcount--
 				elementcount++
 			} else if colour == 12 || colour == 6 {
-				osbfilecreated.WriteString(blueright + blueleft)
+				osbfilecreated.WriteString(blueright + blueleft) // big blue hitobject
 			} else if colour == 4 {
-				osbfilecreated.WriteString(redright + redleft)
-			} else if loopcount%2 == 0 {
+				osbfilecreated.WriteString(redright + redleft) // big red hitobject
+			} else if loopcount%2 == 0 { // check if the hitobject should be drawn on the right side or the left side, making it alternate
 				if colour == 8 || colour == 2 {
 					osbfilecreated.WriteString(blueright)
 				} else if colour == 0 {
@@ -233,14 +231,15 @@ Sprite,Foreground,Centre,"SB\taikobigcircle.png",0,0
 
 			fmt.Println("Added " + strconv.Itoa(elementcount) + " elements.")
 		} else {
-			oneline.Scan()
+			oneline.Scan() // if [HitObjects] not found keep scanning
 		}
 	}
 
-	osbfilecreated.WriteString("//Storyboard Sound Samples")
+	osbfilecreated.WriteString("//Storyboard Sound Samples") // this is required in order to work
 
 	appendosbopen.Close()
 	osuread.Close()
+	osureadnew.Close()
 
 	fmt.Println("\ngoinked")
 
